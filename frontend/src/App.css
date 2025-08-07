@@ -1,0 +1,206 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --primary-green: #228B22; /* Forest Green */
+  --secondary-green: #3CB371; /* Medium Sea Green */
+  --light-green: #F0FFF0; /* Honeydew */
+  --dark-text: #333333;
+  --light-text: #ffffff;
+  --border-color: #DDDDDD;
+  --background-color: #F9F9F9;
+  --font-family: 'Inter', sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background-color);
+  color: var(--dark-text);
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  background-color: white;
+}
+
+header {
+  background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+  color: var(--light-text);
+  padding: 1rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-bottom: 3px solid var(--primary-green);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+header p {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.chat-window {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.message {
+  display: flex;
+  gap: 0.75rem;
+  max-width: 85%;
+}
+
+.message.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.message.bot {
+  align-self: flex-start;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: var(--light-text);
+  flex-shrink: 0;
+}
+
+.user .avatar {
+  background-color: var(--secondary-green);
+}
+
+.bot .avatar {
+  background-color: var(--primary-green);
+}
+
+.message-content {
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  line-height: 1.6;
+}
+
+.user .message-content {
+  background-color: var(--secondary-green);
+  color: var(--light-text);
+  border-bottom-right-radius: 0;
+}
+
+.bot .message-content {
+  background-color: var(--light-green);
+  color: var(--dark-text);
+  border-bottom-left-radius: 0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.message-content p:first-child { margin-top: 0; }
+.message-content p:last-child { margin-bottom: 0; }
+
+.input-area {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  background-color: white;
+}
+
+.input-form {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.input-form input {
+  flex-grow: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 25px;
+  font-size: 1rem;
+  font-family: var(--font-family);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-form input:focus {
+  outline: none;
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(34, 139, 34, 0.2);
+}
+
+.input-form button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 25px;
+  background-color: var(--primary-green);
+  color: var(--light-text);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.input-form button:hover:not(:disabled) {
+  background-color: #1A6A1A;
+}
+
+.input-form button:disabled {
+  background-color: #a9a9a9;
+  cursor: not-allowed;
+}
+
+/* Tool Call Styles */
+.tool-call {
+  font-size: 0.8rem;
+  color: #555;
+  background-color: #f0f0f0;
+  border-left: 3px solid var(--secondary-green);
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.tool-call strong {
+    color: var(--primary-green);
+}
+
+/* Typing Indicator */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+}
+.typing-indicator span {
+    height: 8px;
+    width: 8px;
+    margin: 0 2px;
+    background-color: var(--primary-green);
+    border-radius: 50%;
+    display: inline-block;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1.0); }
+}

@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+langchain
+langchain-groq
+langgraph
+langchain_community
+langchain-openai
+faiss-cpu
+tavily-python
+duckduckgo-search
+python-dotenv
+pydantic
+aiohttp
+py-bing-search
+lxml
+beautifulsoup4

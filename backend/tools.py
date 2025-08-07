@@ -1,0 +1,133 @@
+import os
+import requests
+from bs4 import BeautifulSoup
+from pydantic import BaseModel, Field
+from langchain.tools import tool
+from langchain_community.utilities import SerpAPIWrapper
+from rag import rag_system
+
+# --- Tool Definitions ---
+
+# 1. Advanced Search for General Research (Financial Schemes, etc.)
+# Initialize with error handling for missing API key
+print("🔄 Initializing search tools...")
+try:
+    from langchain_community.tools import TavilySearchResults
+    tavily_tool = TavilySearchResults(max_results=5)
+    print("✅ Tavily search tool initialized successfully")
+except Exception as e:
+    print(f"⚠️  Warning: Tavily search tool failed to initialize: {e}")
+    tavily_tool = None
+
+# 2. Fallback Search
+try:
+    from langchain_community.tools import DuckDuckGoSearchRun
+    duckduckgo_tool = DuckDuckGoSearchRun()
+    print("✅ DuckDuckGo search tool initialized successfully")
+except Exception as e:
+    print(f"⚠️  Warning: DuckDuckGo search tool failed to initialize: {e}")
+    duckduckgo_tool = None
+
+# 3. Specialized Market Price Search using SerpApi for accuracy
+try:
+    serpapi_search = SerpAPIWrapper(serpapi_api_key=os.getenv("SERPAPI_API_KEY"))
+    print("✅ SerpAPI search tool initialized successfully")
+except Exception as e:
+    print(f"⚠️  Warning: SerpAPI search tool failed to initialize: {e}")
+    serpapi_search = None
+
+print("🛠️  All tools initialization completed")
+
+class MarketPriceToolInput(BaseModel):
+    crop_name: str = Field(description="The name of the agricultural crop, e.g., 'potato', 'tomato'.")
+    location: str = Field(description="The city or mandi name for the price query, e.g., 'Lucknow'.")
+
+@tool("serpapi_market_price_tool", args_schema=MarketPriceToolInput)
+def serpapi_market_price_tool(crop_name: str, location: str) -> str:
+    """
+    Uses SerpApi to get accurate, real-time market prices (mandi rates) for a specific crop in a given location.
+    This is the preferred tool for all price-related queries.
+    """
+    if not serpapi_search:
+        return "SerpAPI is not available. Please set SERPAPI_API_KEY in your .env file."
+    # print(f"--- Calling SerpApi for: {crop_name} in {location} ---")  # Remove debug output
+    query = f"today's {crop_name} price in {location} mandi"
+    return serpapi_search.run(query)
+
+# 4. Soil Data Retrieval
+class SoilToolInput(BaseModel):
+    query: str = Field(description="The user's query about soil, crops, or a specific location like a district and state.")
+
+@tool("soil_data_retriever", args_schema=SoilToolInput)
+def soil_data_retriever(query: str) -> str:
+    """
+    Searches the soil database for information about soil composition, nutrient levels, and suitable crops for a specific location.
+    """
+    if not rag_system or not rag_system.retriever:
+        return "Soil data system is not available. Please ensure the GOOGLE_API_KEY is set up correctly."
+    try:
+        docs = rag_system.retriever.invoke(query)
+        if not docs:
+            return f"No soil data found for a query related to '{query}'. Please specify a district and state in India."
+        return "\n\n".join([doc.page_content for doc in docs])
+    except Exception as e:
+        return f"Error retrieving soil data: {e}"
+
+# 5. Weather & Alert Data
+class WeatherToolInput(BaseModel):
+    location: str = Field(description="The city and state for which to get the weather forecast, e.g., 'Bhubaneswar, Odisha'.")
+
+@tool("weather_alert_tool", args_schema=WeatherToolInput)
+def weather_alert_tool(location: str) -> str:
+    """
+    Fetches the current weather forecast for a specified location.
+    """
+    api_key = os.getenv("OPENWEATHERMAP_API_KEY")
+    if not api_key:
+        return "Weather forecast is unavailable. OPENWEATHERMAP_API_KEY is not set."
+    base_url = "http://api.openweathermap.org/data/2.5/weather"
+    params = {"q": location, "appid": api_key, "units": "metric"}
+    try:
+        response = requests.get(base_url, params=params, timeout=5)
+        response.raise_for_status()
+        weather_data = response.json()
+        forecast = (
+            f"Weather forecast for {weather_data['name']}:\n"
+            f"- Condition: {weather_data['weather'][0]['description']}\n"
+            f"- Temperature: {weather_data['main']['temp']}°C (feels like {weather_data['main']['feels_like']}°C)\n"
+            f"- Humidity: {weather_data['main']['humidity']}%\n"
+            f"- Wind Speed: {weather_data['wind']['speed']} m/s\n"
+        )
+        return forecast
+    except requests.exceptions.RequestException as e:
+        return f"Error fetching weather data for {location}: {e}"
+
+# 6. Web Scraper
+class ScraperToolInput(BaseModel):
+    url: str = Field(description="The URL of the webpage to scrape for information.")
+
+@tool("web_scraper_tool", args_schema=ScraperToolInput)
+def web_scraper_tool(url: str) -> str:
+    """
+    Scrapes the text content of a given URL.
+    """
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.content, 'lxml')
+        text = ' '.join(p.get_text() for p in soup.find_all('p'))
+        if not text:
+            text = soup.get_text(separator=' ', strip=True)
+        return text[:4000]
+    except Exception as e:
+        return f"Error scraping URL {url}: {e}"
+
+# List of all tools for the agents
+all_tools = [serpapi_market_price_tool, soil_data_retriever, weather_alert_tool, web_scraper_tool]
+
+# Add search tools only if they're available
+if tavily_tool:
+    all_tools.append(tavily_tool)
+if duckduckgo_tool:
+    all_tools.append(duckduckgo_tool)
