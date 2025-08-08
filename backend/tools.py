@@ -102,7 +102,78 @@ def weather_alert_tool(location: str) -> str:
     except requests.exceptions.RequestException as e:
         return f"Error fetching weather data for {location}: {e}"
 
-# 6. Web Scraper
+# 6. Natural Disaster Alert Tool
+class DisasterAlertToolInput(BaseModel):
+    location: str = Field(description="The location for which to fetch disaster alerts, e.g., 'Prayagraj, Uttar Pradesh'.")
+
+@tool("disaster_alert_tool", args_schema=DisasterAlertToolInput)
+def disaster_alert_tool(location: str) -> str:
+    """
+    Fetches natural disaster alerts and warnings for a specific location using NDMA (National Disaster Management Authority) data.
+    This includes flood warnings, cyclone alerts, heat wave warnings, and other natural disaster information.
+    """
+    print(f"🚨 Fetching disaster alerts for: {location}")
+    
+    url = "https://sachet.ndma.gov.in/cap_public_website/FetchAddressWiseAlerts"
+    
+    headers = {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    }
+    
+    data = {
+        'address': location,
+        'radius': 50  # 50 km radius
+    }
+    
+    try:
+        print(f"📡 Making request to NDMA API for {location}...")
+        response = requests.post(url, data=data, headers=headers, timeout=15)
+        response.raise_for_status()
+        
+        try:
+            alert_data = response.json()
+            print(f"✅ Successfully received alert data for {location}")
+            
+            if isinstance(alert_data, list) and len(alert_data) > 0:
+                alerts_summary = f"🚨 DISASTER ALERTS FOR {location.upper()}:\n\n"
+                
+                for i, alert in enumerate(alert_data[:5]):  # Limit to 5 most recent alerts
+                    if isinstance(alert, dict):
+                        event_type = alert.get('event', 'Unknown Event')
+                        severity = alert.get('severity', 'Unknown')
+                        headline = alert.get('headline', 'No headline available')
+                        description = alert.get('description', 'No description available')
+                        effective = alert.get('effective', 'Unknown time')
+                        
+                        alerts_summary += f"ALERT {i+1}:\n"
+                        alerts_summary += f"• Event: {event_type}\n"
+                        alerts_summary += f"• Severity: {severity}\n"
+                        alerts_summary += f"• Headline: {headline}\n"
+                        alerts_summary += f"• Description: {description[:200]}...\n"
+                        alerts_summary += f"• Effective: {effective}\n\n"
+                
+                return alerts_summary
+            else:
+                return f"✅ No active disaster alerts found for {location}. The area appears to be safe from major natural disasters at this time."
+                
+        except Exception as json_error:
+            # If JSON parsing fails, try to extract useful text
+            response_text = response.text
+            if "no alerts" in response_text.lower() or len(response_text.strip()) < 10:
+                return f"✅ No active disaster alerts found for {location}. The area appears to be safe from major natural disasters at this time."
+            else:
+                return f"⚠️ Received response but couldn't parse alert data for {location}. Raw response: {response_text[:500]}"
+                
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Error fetching disaster alerts for {location}: {e}")
+        return f"❌ Unable to fetch disaster alerts for {location} due to network error: {str(e)}. Please try again later."
+    except Exception as e:
+        print(f"❌ Unexpected error in disaster_alert_tool: {e}")
+        return f"❌ An unexpected error occurred while fetching disaster alerts: {str(e)}"
+
+# 7. Web Scraper
 class ScraperToolInput(BaseModel):
     url: str = Field(description="The URL of the webpage to scrape for information.")
 
@@ -124,7 +195,7 @@ def web_scraper_tool(url: str) -> str:
         return f"Error scraping URL {url}: {e}"
 
 # List of all tools for the agents
-all_tools = [serpapi_market_price_tool, soil_data_retriever, weather_alert_tool, web_scraper_tool]
+all_tools = [serpapi_market_price_tool, soil_data_retriever, weather_alert_tool, disaster_alert_tool, web_scraper_tool]
 
 # Add search tools only if they're available
 if tavily_tool:

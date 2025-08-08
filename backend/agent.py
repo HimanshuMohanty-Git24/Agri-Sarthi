@@ -47,36 +47,68 @@ def supervisor_agent(state: AgentState):
     """
     try:
         messages = state['messages']
-        user_input = messages[-1].content
+        user_input = messages[-1].content.lower()
         
-        prompt = f"""
-        You are the supervisor of a team of expert AI agents for Indian agriculture.
-        Based on the user's query, determine which agent is best suited to handle it.
+        print(f"🎯 Supervisor analyzing query: {user_input}")
+        
+        # Weather and disaster alert keywords
+        weather_keywords = ['weather', 'temperature', 'rain', 'forecast', 'climate', 'humidity', 'wind']
+        disaster_keywords = ['flood', 'warning', 'alert', 'disaster', 'cyclone', 'storm', 'drought', 'heatwave']
+        soil_keywords = ['soil', 'crop', 'fertilizer', 'farming', 'cultivation', 'nutrients']
+        price_keywords = ['price', 'rate', 'mandi', 'market', 'sell', 'cost']
+        finance_keywords = ['loan', 'scheme', 'subsidy', 'financial', 'bank', 'government']
+        
+        # Check for weather/disaster related queries first
+        if any(keyword in user_input for keyword in weather_keywords + disaster_keywords):
+            print("🌤️ Routing to SoilCropAdvisor for weather/disaster query")
+            return {"next_agent": "SoilCropAdvisor"}
+        
+        # Check for market price queries
+        elif any(keyword in user_input for keyword in price_keywords):
+            print("💰 Routing to MarketAnalyst for price query")
+            return {"next_agent": "MarketAnalyst"}
+        
+        # Check for financial queries
+        elif any(keyword in user_input for keyword in finance_keywords):
+            print("🏦 Routing to FinancialAdvisor for financial query")
+            return {"next_agent": "FinancialAdvisor"}
+        
+        # Check for soil/crop queries
+        elif any(keyword in user_input for keyword in soil_keywords):
+            print("🌱 Routing to SoilCropAdvisor for soil/crop query")
+            return {"next_agent": "SoilCropAdvisor"}
+        
+        # Use LLM as fallback for complex queries
+        else:
+            prompt = f"""
+            You are the supervisor of a team of expert AI agents for Indian agriculture.
+            Based on the user's query, determine which agent is best suited to handle it.
 
-        Your available agents are:
-        - SoilCropAdvisor: For questions about soil health, suitable crops for a location, fertilizers, and farming techniques.
-        - MarketAnalyst: For questions about current market prices (mandi rates), price trends, and best places to sell produce.
-        - FinancialAdvisor: For questions about government schemes, subsidies, loans, and financial planning for farmers.
+            Your available agents are:
+            - SoilCropAdvisor: For questions about soil health, suitable crops for a location, fertilizers, farming techniques, WEATHER, and DISASTER ALERTS
+            - MarketAnalyst: For questions about current market prices (mandi rates), price trends, and best places to sell produce
+            - FinancialAdvisor: For questions about government schemes, subsidies, loans, and financial planning for farmers
 
-        User Query: "{user_input}"
+            User Query: "{user_input}"
 
-        Based on this query, respond with ONLY the name of the best agent to delegate the task to.
-        If the query is a greeting or a general question, respond with "end".
-        """
-        
-        response = llm.invoke(prompt)
-        next_agent_name = response.content.strip()
-        
-        # Validate and default to 'end' if the response is not a valid agent name
-        valid_agents = ["SoilCropAdvisor", "MarketAnalyst", "FinancialAdvisor"]
-        if next_agent_name not in valid_agents:
-            next_agent_name = "end"
-        
-        # Return a new state dict with the next_agent set
-        return {"next_agent": next_agent_name}
+            Based on this query, respond with ONLY the name of the best agent to delegate the task to.
+            If the query is a greeting or a general question, respond with "end".
+            """
+            
+            response = llm.invoke(prompt)
+            next_agent_name = response.content.strip()
+            
+            print(f"🤖 LLM suggested agent: {next_agent_name}")
+            
+            # Validate and default to 'end' if the response is not a valid agent name
+            valid_agents = ["SoilCropAdvisor", "MarketAnalyst", "FinancialAdvisor"]
+            if next_agent_name not in valid_agents:
+                next_agent_name = "end"
+            
+            return {"next_agent": next_agent_name}
         
     except Exception as e:
-        print(f"Error in supervisor_agent: {e}")
+        print(f"❌ Error in supervisor_agent: {e}")
         return {"next_agent": "end"}
 
 def create_specialist_agent_node(agent_name: str, system_prompt: str):
@@ -85,18 +117,124 @@ def create_specialist_agent_node(agent_name: str, system_prompt: str):
     This reduces code duplication.
     """
     def agent_node(state: AgentState):
-        # print(f"---{agent_name.upper()}---")  # Remove debug output
+        print(f"🔄 {agent_name} is processing the query...")
         
-        # Enhanced system prompt to ensure agent doesn't say its name
-        enhanced_prompt = f"""{system_prompt}
+        # Get the original user query to analyze
+        user_query = ""
+        for msg in state['messages']:
+            if hasattr(msg, 'content') and isinstance(msg.content, str) and not msg.content.startswith("You are"):
+                user_query = msg.content
+                break
+        
+        print(f"🔍 Analyzing user query: {user_query}")
+        
+        # Check if this is a FinancialAdvisor handling Indian schemes
+        if agent_name == "FinancialAdvisor":
+            # Make query India-specific
+            enhanced_prompt = f"""{system_prompt}
+
+CRITICAL: You are helping an Indian farmer. Search specifically for Indian government schemes.
+
+User Query: "{user_query}"
+
+When searching, use terms like:
+- "India farmer electricity subsidy scheme"
+- "Indian government PM-KUSUM scheme" 
+- "India agriculture electricity scheme"
+- "Indian farmer solar pump scheme"
+- "Government of India electricity subsidy farmers"
+
+Focus ONLY on Indian schemes - PM-KUSUM, state electricity subsidies, solar schemes, etc.
+"""
+        
+        # Check if this is a SoilCropAdvisor handling weather/disaster queries
+        elif agent_name == "SoilCropAdvisor":
+            query_lower = user_query.lower()
+            needs_weather = any(word in query_lower for word in ['weather', 'temperature', 'climate', 'forecast'])
+            needs_disaster = any(word in query_lower for word in ['flood', 'warning', 'alert', 'disaster', 'rain warning', 'flooding', 'waring'])
+            
+            # Check what tools have already been called
+            called_tools = set()
+            for msg in state["messages"]:
+                if hasattr(msg, 'tool_calls') and msg.tool_calls:
+                    for tool_call in msg.tool_calls:
+                        called_tools.add(tool_call.get('name', ''))
+            
+            print(f"🌤️ Needs weather: {needs_weather}, Needs disaster alerts: {needs_disaster}")
+            print(f"🛠️ Already called tools: {called_tools}")
+            
+            if needs_weather and needs_disaster:
+                # For combined queries, force explicit tool usage
+                if 'weather_alert_tool' not in called_tools and 'disaster_alert_tool' not in called_tools:
+                    # Neither tool called yet - prioritize calling both
+                    enhanced_prompt = f"""{system_prompt}
+
+CRITICAL INSTRUCTIONS: This query requires BOTH weather and disaster information.
+User Query: "{user_query}"
+
+You MUST call weather_alert_tool first for the location mentioned in the query.
+Do NOT provide a final answer yet - just call the weather tool.
+"""
+                elif 'weather_alert_tool' in called_tools and 'disaster_alert_tool' not in called_tools:
+                    # Weather tool called, now need disaster tool
+                    enhanced_prompt = f"""{system_prompt}
+
+CRITICAL: You have weather data but the user also asked about flooding/rain warnings/alerts.
+User Query: "{user_query}"
+
+You MUST now call disaster_alert_tool for the same location to get disaster alerts.
+Do NOT provide a final answer yet - call the disaster alert tool.
+"""
+                elif 'disaster_alert_tool' in called_tools and 'weather_alert_tool' not in called_tools:
+                    # Disaster tool called, now need weather tool
+                    enhanced_prompt = f"""{system_prompt}
+
+CRITICAL: You have disaster alert data but the user also asked about weather.
+User Query: "{user_query}"
+
+You MUST now call weather_alert_tool for the same location to get weather information.
+Do NOT provide a final answer yet - call the weather tool.
+"""
+                else:
+                    # Both tools have been called, now provide comprehensive answer
+                    enhanced_prompt = f"""{system_prompt}
+
+You now have both weather and disaster alert data. Provide a comprehensive response combining both results.
+"""
+            elif needs_disaster and 'disaster_alert_tool' not in called_tools:
+                # Only disaster query
+                enhanced_prompt = f"""{system_prompt}
+
+CRITICAL: The user is asking about disaster alerts/warnings/flooding. You MUST use disaster_alert_tool.
+User Query: "{user_query}"
+
+Call disaster_alert_tool for the location mentioned in the query.
+"""
+            elif needs_weather and 'weather_alert_tool' not in called_tools:
+                # Only weather query
+                enhanced_prompt = f"""{system_prompt}
+
+CRITICAL: The user is asking about weather. You MUST use weather_alert_tool.
+User Query: "{user_query}"
+
+Call weather_alert_tool for the location mentioned in the query.
+"""
+            else:
+                enhanced_prompt = system_prompt
+        else:
+            enhanced_prompt = system_prompt
+        
+        # Add the critical rule about not mentioning agent names
+        enhanced_prompt += """
 
 ABSOLUTE CRITICAL RULE: 
-- DO NOT SAY THE WORD "MarketAnalyst" OR ANY AGENT NAME AT ALL
+- DO NOT SAY ANY AGENT NAME, ROLE NAME, OR IDENTIFIER
+- DO NOT say "WeatherAgent", "MarketAnalyst", "SoilCropAdvisor", "FinancialAdvisor", or "Supervisor"
 - START IMMEDIATELY WITH YOUR ANSWER
 - NO ROLE IDENTIFICATION WHATSOEVER
 
-Example: If asked about potato price, respond EXACTLY like this:
-"Based on current market data, potato in Lucknow is trading at ₹1220 per quintal (₹12.2 per kg)."
+Example: If asked about weather, respond EXACTLY like this:
+"The current weather in Prayagraj shows..."
 
 DO NOT start with agent names or role identification.
 """
@@ -104,24 +242,46 @@ DO NOT start with agent names or role identification.
         # Prepend the system prompt to the message history for this agent's turn
         messages_with_prompt = [HumanMessage(content=enhanced_prompt)] + state['messages']
         
+        print(f"📨 Sending query to LLM for {agent_name}...")
+        
         # Call the LLM with tools
         response = llm_with_tools.invoke(messages_with_prompt)
         
-        # Simple post-processing to remove only explicit agent names
+        print(f"✅ {agent_name} received response from LLM")
+        
+        # Log tool calls if any
+        if hasattr(response, 'tool_calls') and response.tool_calls:
+            print(f"🔧 {agent_name} is calling tools: {[call.get('name', 'unknown') for call in response.tool_calls]}")
+        
+        # Enhanced post-processing to remove any role identifiers
         if hasattr(response, 'content') and response.content:
             import re
             filtered_content = response.content
             
-            # Only remove if the content starts with an agent name
-            agent_names = ['MarketAnalyst', 'SoilCropAdvisor', 'FinancialAdvisor', 'Supervisor']
-            for name in agent_names:
-                # Only remove if it starts with the agent name followed by colon or space
+            # Remove any agent or role names that might appear
+            unwanted_names = [
+                'MarketAnalyst', 'SoilCropAdvisor', 'FinancialAdvisor', 'Supervisor',
+                'WeatherAgent', 'Weather Agent', 'Disaster Agent', 'DisasterAgent'
+            ]
+            
+            for name in unwanted_names:
+                # Remove if it starts with the name
                 if filtered_content.strip().startswith(name):
                     filtered_content = re.sub(f'^{re.escape(name)}[:\s]*', '', filtered_content).strip()
-                    break
+                # Also remove if it appears anywhere in the text with common patterns
+                filtered_content = re.sub(f'{re.escape(name)}[:\s]*', '', filtered_content)
+            
+            # Clean up any remaining artifacts
+            filtered_content = re.sub(r'^\W+', '', filtered_content)  # Remove leading non-word chars
+            
+            # Ensure it starts with a capital letter
+            if filtered_content and not filtered_content[0].isupper():
+                filtered_content = filtered_content[0].upper() + filtered_content[1:] if len(filtered_content) > 1 else filtered_content.upper()
             
             # Update the response content
             response.content = filtered_content
+            
+            print(f"🧹 {agent_name} cleaned response: {filtered_content[:100]}...")
         
         # The agent's response is the final message in the list
         return {"messages": [response]}
@@ -130,22 +290,29 @@ DO NOT start with agent names or role identification.
 
 # Define the system prompts for each specialist agent
 soil_crop_prompt = """
-You are a professional agricultural advisor specializing in soil health and crop recommendations.
+You are a professional agricultural advisor specializing in soil health, crop recommendations, weather information, and disaster alerts.
 
-INSTRUCTIONS:
-- Use the `soil_data_retriever` tool to get specific soil information for the farmer's location
-- Use the `weather_alert_tool` if weather information is requested
-- Provide clear, actionable advice that farmers can implement
-- Be professional, helpful, and practical in your recommendations
+CRITICAL TOOL USAGE INSTRUCTIONS:
 
-RESPONSE FORMAT:
-Structure your response with:
-1. Brief soil analysis summary
-2. Recommended crops for the soil type
-3. Practical farming advice
-4. Seasonal considerations (if applicable)
+For queries that mention BOTH weather AND disaster alerts/warnings/flooding:
+You MUST call BOTH tools in sequence:
+1. weather_alert_tool(location="User's Location")
+2. disaster_alert_tool(location="User's Location")
 
-Do NOT include your role name in the response. Speak directly to the farmer as their trusted agricultural advisor.
+For queries that mention only weather (temperature, forecast, climate):
+- Use only weather_alert_tool(location="User's Location")
+
+For queries that mention only disaster alerts (flooding, warnings, alerts, rain warnings):
+- Use only disaster_alert_tool(location="User's Location")
+
+For soil/crop queries:
+- Use soil_data_retriever(query="User's query")
+
+IMPORTANT: If the user asks "What is the weather in [Location] and is there any flooding or rain warning?", you MUST use BOTH tools.
+
+After getting tool results, provide a comprehensive response combining all the information.
+
+Always start your response directly with the information - DO NOT mention agent names or roles.
 """
 
 market_analyst_prompt = """
@@ -162,23 +329,35 @@ Start directly with "Based on current market data" - no other text before it.
 """
 
 financial_advisor_prompt = """
-You are a professional financial advisor specializing in agricultural finance and government schemes.
+You are a professional financial advisor specializing in agricultural finance and government schemes in INDIA.
 
-INSTRUCTIONS:
-- Use the `tavily_search` or `duckduckgo_search` tools to find current information on government schemes, subsidies, and loans
-- Provide clear, actionable guidance that farmers can understand and implement
-- Focus on practical steps for accessing financial resources
-- Include eligibility criteria and application processes
+CRITICAL INSTRUCTIONS:
+- You MUST focus ONLY on Indian government schemes, subsidies, and programs
+- Always search for "India" or "Indian government" specific schemes
+- Do NOT provide information about US, European, or other international programs
+- Focus on central and state government initiatives in India
+
+SEARCH STRATEGY:
+- You are a India Centric financial advisor so Only focus on Indian central & state government schemes
+- Use terms like "India farmer electricity subsidy", "PM-KUSUM scheme", "Indian agriculture electricity scheme"
+- Look for schemes from Ministry of Agriculture, Ministry of Power, Government of India
+- Include state-specific schemes for farmers
 
 RESPONSE FORMAT:
 Structure your response with:
-1. Brief overview of available schemes/options
-2. Eligibility requirements
-3. How to apply (step-by-step)
-4. Required documents
-5. Contact information or helpful resources
+1. Brief overview of available Indian schemes/options
+2. Eligibility requirements (for Indian farmers)
+3. How to apply (Indian government procedures)
+4. Required documents (Indian documents like Aadhaar, land records)
+5. Contact information (Indian government offices/websites)
 
-Do NOT include your role name in the response. Speak directly to the farmer as their trusted financial advisor.
+IMPORTANT INDIAN SCHEMES TO MENTION:
+- PM-KUSUM (Pradhan Mantri Kisan Urja Suraksha evam Utthaan Mahabhiyan)
+- State electricity subsidies for farmers
+- Solar pump schemes
+- Agricultural connection schemes
+
+Do NOT include your role name in the response. Speak directly to the Indian farmer as their trusted advisor.
 """
 
 # Create the agent nodes using the factory function
@@ -206,20 +385,58 @@ def after_tool_call_router(state: AgentState):
 # Simple main router for agents after they complete
 def main_router(state: AgentState):
     """
-    Simple router - just ends conversation after agent response
+    Enhanced router that handles multi-tool scenarios
     """
     try:
         last_message = state["messages"][-1]
         
         # If the last message is a tool call, route to tools
         if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+            print(f"🔧 Routing to tools. Tool calls: {[call.get('name', 'unknown') for call in last_message.tool_calls]}")
             return "tools"
         
+        # Check if this was a SoilCropAdvisor response that might need additional tool calls
+        if len(state["messages"]) >= 2:
+            previous_message = state["messages"][-2]
+            if hasattr(previous_message, 'tool_calls') and previous_message.tool_calls:
+                # Get the original user query
+                original_query = ""
+                for msg in reversed(state["messages"]):
+                    if hasattr(msg, 'content') and isinstance(msg.content, str) and not msg.content.startswith("You are"):
+                        original_query = msg.content.lower()
+                        break
+                
+                print(f"🔍 Checking if additional tools needed for: {original_query}")
+                
+                # Check if we need both weather and disaster tools
+                needs_weather = any(word in original_query for word in ['weather', 'temperature', 'climate', 'forecast'])
+                needs_disaster = any(word in original_query for word in ['flood', 'warning', 'alert', 'disaster', 'rain warning', 'flooding'])
+                
+                # Check what tools were already called
+                called_tools = set()
+                for msg in state["messages"]:
+                    if hasattr(msg, 'tool_calls') and msg.tool_calls:
+                        for tool_call in msg.tool_calls:
+                            called_tools.add(tool_call.get('name', ''))
+                
+                print(f"🛠️ Tools already called: {called_tools}")
+                print(f"🌤️ Needs weather: {needs_weather}, Needs disaster: {needs_disaster}")
+                
+                # If we need both tools but only called one, continue processing
+                if needs_weather and needs_disaster:
+                    if 'weather_alert_tool' in called_tools and 'disaster_alert_tool' not in called_tools:
+                        print("⚠️ Need to call disaster_alert_tool, routing back to Supervisor")
+                        return "Supervisor"
+                    elif 'disaster_alert_tool' in called_tools and 'weather_alert_tool' not in called_tools:
+                        print("⚠️ Need to call weather_alert_tool, routing back to Supervisor")
+                        return "Supervisor"
+        
         # Otherwise end the conversation
+        print("🏁 Ending conversation")
         return "end"
         
     except Exception as e:
-        print(f"ERROR in main_router: {e}")
+        print(f"❌ ERROR in main_router: {e}")
         return "end"
 
 # Create the StateGraph
