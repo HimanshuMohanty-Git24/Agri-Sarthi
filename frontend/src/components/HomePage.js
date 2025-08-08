@@ -51,7 +51,7 @@ const HomePage = ({ onNavigateToChat }) => {
   ];
 
   const stats = [
-    { icon: <Users />, number: '10K+', label: 'Farmers Helped' },
+    { icon: <Users />, number: '10K+', label: 'Farmers Can be Helped' },
     { icon: <MapPin />, number: '500+', label: 'Districts Covered' },
     { icon: <Clock />, number: '24/7', label: 'AI Support' },
     { icon: <Target />, number: '95%', label: 'Accuracy Rate' }
