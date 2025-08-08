@@ -139,21 +139,24 @@ async def stream_generator(thread_id: str, user_message: str):
         if full_response:
             import re
             
-            # Light cleaning - only remove agent names at the beginning
+            # Comprehensive cleaning to remove all tool-related artifacts
             cleaned_response = full_response.strip()
-            print(f"Original response starts with: {cleaned_response[:50]}...")
+            print(f"Original response starts with: {cleaned_response[:100]}...")
             
-            # Only remove agent names if they appear at the very start
-            agent_names = ['MarketAnalyst', 'SoilCropAdvisor', 'FinancialAdvisor', 'Supervisor', 'WeatherAgent']
-            for name in agent_names:
-                if cleaned_response.startswith(name):
-                    cleaned_response = re.sub(f'^{re.escape(name)}[:\s]*', '', cleaned_response).strip()
-                    print(f"Removed agent name: {name}")
-                    break
+            # Remove tool-use blocks and JSON artifacts
+            cleaned_response = re.sub(r'</tool-use>\s*{.*?}\s*</tool-use>', '', cleaned_response, flags=re.DOTALL)
+            cleaned_response = re.sub(r'<function_calls>.*?</function_calls>', '', cleaned_response, flags=re.DOTALL)
+            cleaned_response = re.sub(r'<tool-use>.*?</tool-use>', '', cleaned_response, flags=re.DOTALL)
             
-            # Make sure it starts properly
-            if cleaned_response and not cleaned_response[0].isupper():
-                cleaned_response = cleaned_response[0].upper() + cleaned_response[1:] if len(cleaned_response) > 1 else cleaned_response.upper()
+            # Remove JSON tool call blocks
+            cleaned_response = re.sub(r'{\s*"tool_call":\s*{.*?}\s*}', '', cleaned_response, flags=re.DOTALL)
+            
+            # Remove any remaining tool artifacts
+            cleaned_response = re.sub(r'tool_call.*?}.*?}', '', cleaned_response, flags=re.DOTALL)
+            
+            # Clean up extra whitespace and newlines
+            cleaned_response = re.sub(r'\n\s*\n\s*\n', '\n\n', cleaned_response)
+            cleaned_response = cleaned_response.strip()
             
             print(f"Final cleaned response starts with: {cleaned_response[:50]}...")
             
