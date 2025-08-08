@@ -1,14 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --primary-green: #228B22; /* Forest Green */
-  --secondary-green: #3CB371; /* Medium Sea Green */
-  --light-green: #F0FFF0; /* Honeydew */
-  --dark-text: #333333;
-  --light-text: #ffffff;
-  --border-color: #DDDDDD;
-  --background-color: #F9F9F9;
+  --primary-green: #2E7D32;
+  --secondary-green: #4CAF50;
+  --light-green: #E8F5E8;
+  --accent-green: #66BB6A;
+  --dark-green: #1B5E20;
+  --text-dark: #1B5E20;
+  --text-light: #ffffff;
+  --border-color: #E8F5E8;
+  --background-color: #f8fffe;
   --font-family: 'Inter', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
@@ -16,11 +22,55 @@ body {
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--background-color);
-  color: var(--dark-text);
+  background: linear-gradient(135deg, #f8fffe 0%, #e8f5e8 100%);
+  color: var(--text-dark);
+  line-height: 1.6;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Global Reset */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+p {
+  margin: 0;
+}
+
+ul, ol {
+  margin: 0;
+  padding: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--light-green);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--secondary-green);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-green);
 }
