@@ -8,6 +8,7 @@ import {
     ClockIcon 
 } from '@heroicons/react/24/outline';
 import { Bot, User, Wheat, TrendingUp, CloudRain, Banknote } from 'lucide-react';
+import MessageActions from './MessageActions';
 import './Chat.css';
 
 const Chat = () => {
@@ -230,7 +231,10 @@ const Chat = () => {
                                             <span></span><span></span><span></span>
                                         </div>
                                     ) : (
-                                        <ReactMarkdown>{msg.text}</ReactMarkdown>
+                                        <>
+                                            <ReactMarkdown>{msg.text}</ReactMarkdown>
+                                            <MessageActions message={msg} isBot={msg.sender === 'bot'} />
+                                        </>
                                     )}
                                 </div>
                             </motion.div>
