@@ -58,20 +58,38 @@ def supervisor_agent(state: AgentState):
         price_keywords = ['price', 'rate', 'mandi', 'market', 'sell', 'cost']
         finance_keywords = ['loan', 'scheme', 'subsidy', 'financial', 'bank', 'government']
         
+        # Special handling for ambiguous terms that could be both scheme names and crop names
+        scheme_context_keywords = ['scheme', 'yojana', 'policy', 'government', 'ministry', 'pradhan mantri', 'pm-', 'subsidy', 'benefit', 'apply', 'eligibility']
+        price_context_keywords = ['price', 'rate', 'mandi', 'market', 'cost', 'sell', 'buy', 'trading', 'quintal', 'kg', 'rupees', '₹']
+        
         # Check for weather/disaster related queries first
         if any(keyword in user_input for keyword in weather_keywords + disaster_keywords):
             print("🌤️ Routing to SoilCropAdvisor for weather/disaster query")
             return {"next_agent": "SoilCropAdvisor"}
         
+        # Enhanced logic for ambiguous terms like "kusum" (can be both PM-KUSUM scheme and kusum seed)
+        elif any(keyword in user_input for keyword in finance_keywords):
+            # Check if it's clearly asking about a scheme vs price
+            has_scheme_context = any(keyword in user_input for keyword in scheme_context_keywords)
+            has_price_context = any(keyword in user_input for keyword in price_context_keywords)
+            
+            if has_scheme_context and not has_price_context:
+                print("🏦 Routing to FinancialAdvisor for scheme/financial query")
+                return {"next_agent": "FinancialAdvisor"}
+            elif has_price_context and not has_scheme_context:
+                print("💰 Routing to MarketAnalyst for price query")
+                return {"next_agent": "MarketAnalyst"}
+            elif 'pm-kusum' in user_input or 'pradhan mantri' in user_input:
+                print("🏦 Routing to FinancialAdvisor for PM-KUSUM scheme query")
+                return {"next_agent": "FinancialAdvisor"}
+            else:
+                print("🏦 Routing to FinancialAdvisor for financial query")
+                return {"next_agent": "FinancialAdvisor"}
+        
         # Check for market price queries
         elif any(keyword in user_input for keyword in price_keywords):
             print("💰 Routing to MarketAnalyst for price query")
             return {"next_agent": "MarketAnalyst"}
-        
-        # Check for financial queries
-        elif any(keyword in user_input for keyword in finance_keywords):
-            print("🏦 Routing to FinancialAdvisor for financial query")
-            return {"next_agent": "FinancialAdvisor"}
         
         # Check for soil/crop queries
         elif any(keyword in user_input for keyword in soil_keywords):
@@ -84,15 +102,47 @@ def supervisor_agent(state: AgentState):
             You are the supervisor of a team of expert AI agents for Indian agriculture.
             Based on the user's query, determine which agent is best suited to handle it.
 
+            CRITICAL CONTEXT ANALYSIS AND DISAMBIGUATION:
+            
+            1. FINANCIAL/SCHEME QUERIES (FinancialAdvisor):
+            - Keywords: "scheme", "yojana", "PM-KUSUM", "Pradhan Mantri", "government program", "subsidy", "loan", "benefit", "apply", "eligibility"
+            - Example: "Tell me about PM-KUSUM scheme" → FinancialAdvisor
+            - Example: "How to apply for farmer loan scheme" → FinancialAdvisor
+            
+            2. MARKET PRICE QUERIES (MarketAnalyst):
+            - Keywords: "price", "rate", "mandi", "market", "cost", "₹", "quintal", "kg", "sell", "buy", "trading"
+            - Example: "What is the price of wheat today" → MarketAnalyst
+            - Example: "Kusum seed price in Punjab" → MarketAnalyst
+            
+            3. SOIL/CROP/FARMING QUERIES (SoilCropAdvisor):
+            - Keywords: "soil", "crop recommendation", "farming", "fertilizer", "cultivation", "nutrients", "best crops"
+            - Example: "What crops are suitable for my soil" → SoilCropAdvisor
+            - Example: "Best crops to grow this month" → SoilCropAdvisor
+            
+            4. WEATHER/DISASTER QUERIES (SoilCropAdvisor):
+            - Keywords: "weather", "forecast", "disaster", "alert", "flood", "rain warning"
+            - Example: "Weather forecast for farming" → SoilCropAdvisor
+
+            AMBIGUOUS TERM RESOLUTION:
+            For terms that can be both crops AND schemes (like "kusum"):
+            - If context includes scheme words ("scheme", "government", "PM-", "apply", "subsidy") → FinancialAdvisor
+            - If context includes price words ("price", "rate", "mandi", "₹") → MarketAnalyst
+            - If context is unclear, analyze the overall intent of the question
+
+            EXAMPLES:
+            - "PM-KUSUM scheme details" → FinancialAdvisor (scheme context)
+            - "Kusum seed price today" → MarketAnalyst (price context)
+            - "Tell me about KUSUM" → FinancialAdvisor (government scheme is more common)
+
             Your available agents are:
-            - SoilCropAdvisor: For questions about soil health, suitable crops for a location, fertilizers, farming techniques, WEATHER, and DISASTER ALERTS
-            - MarketAnalyst: For questions about current market prices (mandi rates), price trends, and best places to sell produce
-            - FinancialAdvisor: For questions about government schemes, subsidies, loans, and financial planning for farmers
+            - SoilCropAdvisor: For soil health, crop recommendations, farming techniques, weather, and disaster alerts
+            - MarketAnalyst: For current market prices, mandi rates, and price trends
+            - FinancialAdvisor: For government schemes, subsidies, loans, and financial planning
 
             User Query: "{user_input}"
 
-            Based on this query, respond with ONLY the name of the best agent to delegate the task to.
-            If the query is a greeting or a general question, respond with "end".
+            Analyze the context carefully and respond with ONLY the agent name that best matches the user's intent.
+            If the query is a greeting or general question, respond with "end".
             """
             
             response = llm.invoke(prompt)
@@ -130,14 +180,21 @@ def create_specialist_agent_node(agent_name: str, system_prompt: str):
         
         # Check if this is a FinancialAdvisor handling Indian schemes
         if agent_name == "FinancialAdvisor":
-            # Make query India-specific
+            # Make query India-specific and prevent price tool usage
             enhanced_prompt = f"""{system_prompt}
 
 CRITICAL: You are helping an Indian farmer. Search specifically for Indian government schemes.
 
+ABSOLUTE RULE: NEVER use serpapi_market_price_tool for scheme queries. ONLY use web search tools like:
+- TavilySearchResults
+- DuckDuckGoSearchRun  
+- web_scraper_tool
+
+If the user asks about a scheme, do NOT call any market price tools.
+
 User Query: "{user_query}"
 
-When searching, use terms like:
+When searching for scheme information, use search terms like:
 - "India farmer electricity subsidy scheme"
 - "Indian government PM-KUSUM scheme" 
 - "India agriculture electricity scheme"
@@ -342,6 +399,11 @@ SEARCH STRATEGY:
 - Use terms like "India farmer electricity subsidy", "PM-KUSUM scheme", "Indian agriculture electricity scheme"
 - Look for schemes from Ministry of Agriculture, Ministry of Power, Government of India
 - Include state-specific schemes for farmers
+
+TOOL USAGE RULES:
+- NEVER use serpapi_market_price_tool for scheme queries
+- Use web search tools or available financial tools for scheme information
+- If a user asks about a scheme, do NOT call price tools
 
 RESPONSE FORMAT:
 Structure your response with:

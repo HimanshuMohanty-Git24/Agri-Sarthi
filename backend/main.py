@@ -105,13 +105,13 @@ async def stream_generator(thread_id: str, user_message: str):
                 elif kind == "on_tool_start":
                     tool_name = event.get("name", "unknown")
                     tool_input = event.get('data', {}).get('input', {})
-                    print(f"🛠️ Tool started: {tool_name} with input: {tool_input}")
+                    print(f"Tool started: {tool_name} with input: {tool_input}")
                     tool_events.append({"type": "start", "name": tool_name, "input": tool_input})
                 
                 elif kind == "on_tool_end":
                     tool_name = event.get("name", "unknown")
                     tool_output = event.get("data", {}).get("output", "")
-                    print(f"✅ Tool completed: {tool_name}")
+                    print(f"Tool completed: {tool_name}")
                     
                     # Safely convert tool output to string
                     try:
@@ -124,16 +124,16 @@ async def stream_generator(thread_id: str, user_message: str):
                     except Exception as e:
                         output_str = f"Error processing tool output: {str(e)}"
                     
-                    print(f"📋 Tool output preview: {output_str[:200]}...")
+                    print(f"Tool output preview: {output_str[:200]}...")
                     tool_events.append({"type": "end", "name": tool_name, "output": output_str})
                     
             except Exception as inner_e:
-                print(f"❌ Error processing event: {inner_e}")
+                print(f"ERROR: Error processing event: {inner_e}")
                 print(f"Event that caused error: {event}")
                 # Don't break, continue processing
                 continue
         
-        print(f"🧹 Processing final response. Raw length: {len(full_response)}")
+        print(f"Processing final response. Raw length: {len(full_response)}")
         
         # Second pass: clean the full response and stream it properly
         if full_response:
@@ -141,29 +141,29 @@ async def stream_generator(thread_id: str, user_message: str):
             
             # Light cleaning - only remove agent names at the beginning
             cleaned_response = full_response.strip()
-            print(f"🔍 Original response starts with: {cleaned_response[:50]}...")
+            print(f"Original response starts with: {cleaned_response[:50]}...")
             
             # Only remove agent names if they appear at the very start
             agent_names = ['MarketAnalyst', 'SoilCropAdvisor', 'FinancialAdvisor', 'Supervisor', 'WeatherAgent']
             for name in agent_names:
                 if cleaned_response.startswith(name):
                     cleaned_response = re.sub(f'^{re.escape(name)}[:\s]*', '', cleaned_response).strip()
-                    print(f"🧹 Removed agent name: {name}")
+                    print(f"Removed agent name: {name}")
                     break
             
             # Make sure it starts properly
             if cleaned_response and not cleaned_response[0].isupper():
                 cleaned_response = cleaned_response[0].upper() + cleaned_response[1:] if len(cleaned_response) > 1 else cleaned_response.upper()
             
-            print(f"✨ Final cleaned response starts with: {cleaned_response[:50]}...")
+            print(f"Final cleaned response starts with: {cleaned_response[:50]}...")
             
             # Stream tool events first (hidden from user but logged)
             for event in tool_events:
                 if event["type"] == "start":
-                    print(f"🔧 Streaming tool start event: {event['name']}")
+                    print(f"Tool starting: {event['name']}")
                     yield f"data: {json.dumps({'tool_start': event['name'], 'tool_input': event.get('input')})}\n\n"
                 elif event["type"] == "end":
-                    print(f"✅ Streaming tool end event: {event['name']}")
+                    print(f"Tool completed: {event['name']}")
                     yield f"data: {json.dumps({'tool_end': event['name'], 'tool_output': event['output']})}\n\n"
             
             # Stream the cleaned response character by character for proper formatting
@@ -176,19 +176,19 @@ async def stream_generator(thread_id: str, user_message: str):
                     await asyncio.sleep(0.02)  # Reduced delay for smoother streaming
             else:
                 # Fallback response if cleaning removed everything
-                print("⚠️ Warning: Cleaned response is empty, using fallback")
+                print("WARNING: Cleaned response is empty, using fallback")
                 fallback_msg = "I apologize, but I couldn't process that request properly. Please try again."
                 for char in fallback_msg:
                     yield f"data: {json.dumps({'content': char})}\n\n"
         else:
             # No response collected, send error
-            print("❌ No response collected from agent")
+            print("ERROR: No response collected from agent")
             error_msg = "I'm having trouble getting information right now. Please try again."
             for char in error_msg:
                 yield f"data: {json.dumps({'content': char})}\n\n"
         
     except Exception as e:
-        print(f"❌ Major error in stream_generator: {e}")
+        print(f"ERROR: Major error in stream_generator: {e}")
         print(f"Error type: {type(e)}")
         import traceback
         print(f"Traceback: {traceback.format_exc()}")

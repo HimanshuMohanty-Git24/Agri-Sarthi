@@ -8,7 +8,6 @@ import {
     ClockIcon 
 } from '@heroicons/react/24/outline';
 import { Bot, User, Wheat, TrendingUp, CloudRain, Banknote } from 'lucide-react';
-import toast, { Toaster } from 'react-hot-toast';
 import './Chat.css';
 
 const Chat = () => {
@@ -47,7 +46,6 @@ const Chat = () => {
                         const data = await response.json();
                         console.log(`Backend test successful for ${url}:`, data);
                         setIsConnected(true);
-                        toast.success('Connected to AI assistant!');
                         break;
                     } else {
                         console.error(`Backend test failed for ${url} with status:`, response.status);
@@ -61,7 +59,7 @@ const Chat = () => {
             }
             
             if (!isConnected) {
-                toast.error('Unable to connect to AI assistant. Please ensure the backend is running.');
+                console.error('Unable to connect to AI assistant. Please ensure the backend is running.');
             }
             console.log('======================');
         };
@@ -150,7 +148,7 @@ const Chat = () => {
 
         } catch (error) {
             console.error('Fetch error:', error);
-            toast.error('Failed to get response. Please try again.');
+            console.error('Failed to get response. Please try again.');
             setMessages(prev => prev.map(msg => 
                 msg.id === botMessageId ? { ...msg, text: 'Sorry, I encountered an error. Please try again.' } : msg
             ));
@@ -188,7 +186,6 @@ const Chat = () => {
 
     return (
         <div className="chat-page">
-            <Toaster position="top-right" />
             <motion.div 
                 className="chat-container"
                 initial={{ opacity: 0, y: 20 }}
