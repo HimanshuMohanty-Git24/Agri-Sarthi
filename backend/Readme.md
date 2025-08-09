@@ -19,6 +19,7 @@ Agri Sarthi is a comprehensive agricultural advisory platform that combines mult
 - 📞 **Voice-Based Consultations in Hindi**
 
 ## 🏗️ Architecture
+<img width="630" height="372" alt="AgriSarti workflow" src="https://github.com/user-attachments/assets/e50f1de2-2ef5-45ce-8416-243870fdeba8" />
 
 ### Voice Processing Pipeline
 
@@ -427,3 +428,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 > Built with ❤️ for Indian Farmers using cutting-edge AI technology and UV package management
+
