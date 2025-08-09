@@ -14,3 +14,9 @@ aiohttp
 py-bing-search
 lxml
 beautifulsoup4
+
+# Voice Agent Dependencies
+twilio>=8.2.0
+groq>=0.8.0
+httpx>=0.25.0
+websockets>=10.0

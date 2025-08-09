@@ -40,3 +40,5 @@ yarn.lock
 
 faiss_vector_store/
 
+*.txt
+
