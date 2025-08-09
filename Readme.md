@@ -144,8 +144,10 @@ graph TB
 
 ## How It Works
 
-AgriSarthi utilizes a sophisticated multi-agent AI system to provide specialized advice to farmers. The system is accessible through two primary channels: a web application and a voice call system.
-
+AgriSarthi utilizes a sophisticated multi-agent AI system to provide specialized advice to farmers. The system is accessible through two primary channels: a web application and a voice call system.</br>
+</br>
+<img width="630" height="372" alt="AgriSarti agentic workflow" src="https://github.com/user-attachments/assets/d248cb70-85e7-4a8b-9032-670baf4713ef" />
+</br>
 ### Web System
 
 The web application provides a simple and intuitive chat interface where farmers can ask questions in their natural language.
@@ -318,3 +320,4 @@ You can now call your Twilio phone number to interact with the voice agent.
   * **Database**: FAISS (for RAG)
 
   * **Deployment**: ngrok (for local development)
+
