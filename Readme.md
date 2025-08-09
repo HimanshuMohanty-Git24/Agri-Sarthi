@@ -116,16 +116,16 @@ graph TB
     AG -.-> MON
     AG -.-> SEC
 
-    %% Styling
-    classDef uiLayer fill:#e8f4f8,stroke:#1e88e5,stroke-width:3px,color:#000
-    classDef gatewayLayer fill:#f3e5f5,stroke:#8e24aa,stroke-width:3px,color:#000
-    classDef aiLayer fill:#e8f5e8,stroke:#43a047,stroke-width:3px,color:#000
-    classDef dataLayer fill:#fff3e0,stroke:#fb8c00,stroke-width:3px,color:#000
-    classDef infraLayer fill:#fce4ec,stroke:#e91e63,stroke-width:3px,color:#000
+    %% Dark Mode Optimized Styling
+    classDef uiLayer fill:#1a365d,stroke:#63b3ed,stroke-width:3px,color:#ffffff
+    classDef gatewayLayer fill:#44337a,stroke:#b794f6,stroke-width:3px,color:#ffffff
+    classDef aiLayer fill:#1c4532,stroke:#68d391,stroke-width:3px,color:#ffffff
+    classDef dataLayer fill:#744210,stroke:#f6ad55,stroke-width:3px,color:#ffffff
+    classDef infraLayer fill:#742a2a,stroke:#fc8181,stroke-width:3px,color:#ffffff
     
-    classDef agentBox fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#000
-    classDef endpointBox fill:#e1bee7,stroke:#7b1fa2,stroke-width:2px,color:#000
-    classDef serviceBox fill:#ffcc80,stroke:#ef6c00,stroke-width:2px,color:#000
+    classDef agentBox fill:#2d5a3d,stroke:#48bb78,stroke-width:2px,color:#ffffff
+    classDef endpointBox fill:#553c9a,stroke:#9f7aea,stroke-width:2px,color:#ffffff
+    classDef serviceBox fill:#9c4221,stroke:#ed8936,stroke-width:2px,color:#ffffff
 
     %% Apply styles
     class UL uiLayer
@@ -137,6 +137,9 @@ graph TB
     class SCA,MA,FA agentBox
     class CE,VE,UM endpointBox
     class VS,EA,TA,LLM,STT serviceBox
+
+    %% Global Dark Mode Theme Configuration
+    %%{init: {"theme": "dark", "themeVariables": {"primaryColor": "#1f2937", "primaryTextColor": "#ffffff", "primaryBorderColor": "#4b5563", "lineColor": "#9ca3af", "secondaryColor": "#374151", "tertiaryColor": "#4b5563", "background": "#111827", "mainBkg": "#1f2937", "secondBkg": "#374151", "tertiaryBkg": "#4b5563"}}}%%
 
 ```
 
@@ -320,4 +323,5 @@ You can now call your Twilio phone number to interact with the voice agent.
   * **Database**: FAISS (for RAG)
 
   * **Deployment**: ngrok (for local development)
+
 
