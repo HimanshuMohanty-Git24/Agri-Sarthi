@@ -1,5 +1,3 @@
-Of course\! Here is the updated README.md with a more modern architecture diagram and the requested note about the WhatsApp codebase.
-
 # AgriSarthi: Your AI-Powered Farming Companion
 
 **AgriSarthi** is a revolutionary platform designed to empower farmers with instant, accessible, and accurate agricultural information through a multi-channel approach. Leveraging the power of AI, AgriSarthi provides a comprehensive suite of services through a user-friendly web interface and a simple phone call.
@@ -318,4 +316,5 @@ You can now call your Twilio phone number to interact with the voice agent.
   * **AI**: LangChain, LangGraph, Groq LLaMA3
   * **Voice**: Twilio
   * **Database**: FAISS (for RAG)
+
   * **Deployment**: ngrok (for local development)
