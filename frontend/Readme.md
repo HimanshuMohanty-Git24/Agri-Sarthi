@@ -100,7 +100,7 @@ Agri Sarthi Frontend is a modern, responsive React application that serves as th
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/your-username/agri-sarthi.git
+   git clone https://github.com/HimanshuMohanty-Git24/Agri-Sarthi.git
    cd agri-sarthi/frontend
    ```
 
