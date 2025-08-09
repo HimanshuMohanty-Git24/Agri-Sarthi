@@ -1,5 +1,3 @@
-Of course\! Here is the updated README.md with a more modern architecture diagram and the requested note about the WhatsApp codebase.
-
 # AgriSarthi: Your AI-Powered Farming Companion
 
 **AgriSarthi** is a revolutionary platform designed to empower farmers with instant, accessible, and accurate agricultural information through a multi-channel approach. Leveraging the power of AI, AgriSarthi provides a comprehensive suite of services through a user-friendly web interface and a simple phone call.
@@ -118,16 +116,16 @@ graph TB
     AG -.-> MON
     AG -.-> SEC
 
-    %% Styling
-    classDef uiLayer fill:#e8f4f8,stroke:#1e88e5,stroke-width:3px,color:#000
-    classDef gatewayLayer fill:#f3e5f5,stroke:#8e24aa,stroke-width:3px,color:#000
-    classDef aiLayer fill:#e8f5e8,stroke:#43a047,stroke-width:3px,color:#000
-    classDef dataLayer fill:#fff3e0,stroke:#fb8c00,stroke-width:3px,color:#000
-    classDef infraLayer fill:#fce4ec,stroke:#e91e63,stroke-width:3px,color:#000
+    %% Dark Mode Optimized Styling
+    classDef uiLayer fill:#1a365d,stroke:#63b3ed,stroke-width:3px,color:#ffffff
+    classDef gatewayLayer fill:#44337a,stroke:#b794f6,stroke-width:3px,color:#ffffff
+    classDef aiLayer fill:#1c4532,stroke:#68d391,stroke-width:3px,color:#ffffff
+    classDef dataLayer fill:#744210,stroke:#f6ad55,stroke-width:3px,color:#ffffff
+    classDef infraLayer fill:#742a2a,stroke:#fc8181,stroke-width:3px,color:#ffffff
     
-    classDef agentBox fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#000
-    classDef endpointBox fill:#e1bee7,stroke:#7b1fa2,stroke-width:2px,color:#000
-    classDef serviceBox fill:#ffcc80,stroke:#ef6c00,stroke-width:2px,color:#000
+    classDef agentBox fill:#2d5a3d,stroke:#48bb78,stroke-width:2px,color:#ffffff
+    classDef endpointBox fill:#553c9a,stroke:#9f7aea,stroke-width:2px,color:#ffffff
+    classDef serviceBox fill:#9c4221,stroke:#ed8936,stroke-width:2px,color:#ffffff
 
     %% Apply styles
     class UL uiLayer
@@ -140,14 +138,19 @@ graph TB
     class CE,VE,UM endpointBox
     class VS,EA,TA,LLM,STT serviceBox
 
+    %% Global Dark Mode Theme Configuration
+    %%{init: {"theme": "dark", "themeVariables": {"primaryColor": "#1f2937", "primaryTextColor": "#ffffff", "primaryBorderColor": "#4b5563", "lineColor": "#9ca3af", "secondaryColor": "#374151", "tertiaryColor": "#4b5563", "background": "#111827", "mainBkg": "#1f2937", "secondBkg": "#374151", "tertiaryBkg": "#4b5563"}}}%%
+
 ```
 
 -----
 
 ## How It Works
 
-AgriSarthi utilizes a sophisticated multi-agent AI system to provide specialized advice to farmers. The system is accessible through two primary channels: a web application and a voice call system.
-
+AgriSarthi utilizes a sophisticated multi-agent AI system to provide specialized advice to farmers. The system is accessible through two primary channels: a web application and a voice call system.</br>
+</br>
+<img width="630" height="372" alt="AgriSarti agentic workflow" src="https://github.com/user-attachments/assets/d248cb70-85e7-4a8b-9032-670baf4713ef" />
+</br>
 ### Web System
 
 The web application provides a simple and intuitive chat interface where farmers can ask questions in their natural language.
@@ -318,4 +321,7 @@ You can now call your Twilio phone number to interact with the voice agent.
   * **AI**: LangChain, LangGraph, Groq LLaMA3
   * **Voice**: Twilio
   * **Database**: FAISS (for RAG)
+
   * **Deployment**: ngrok (for local development)
+
+
