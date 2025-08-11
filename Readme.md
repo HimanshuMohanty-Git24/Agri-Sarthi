@@ -5,6 +5,12 @@
 This project aims to bridge the information gap in the agricultural sector, providing farmers with real-time data and expert advice on soil health, crop management, market prices, and government schemes.
 
 -----
+## 📺 Demo Video
+
+[![Agri Sarthi Demo](https://img.youtube.com/vi/o0tapqYnpW4/maxresdefault.jpg)](https://youtu.be/o0tapqYnpW4?si=VWNCJLqgt3p-rFH7)
+
+> Click the thumbnail above to watch the full demo on YouTube.
+-----
 
 ## Architecture
 
@@ -323,5 +329,6 @@ You can now call your Twilio phone number to interact with the voice agent.
   * **Database**: FAISS (for RAG)
 
   * **Deployment**: ngrok (for local development)
+
 
 
