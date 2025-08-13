@@ -19,6 +19,7 @@ This project aims to bridge the information gap in the agricultural sector, prov
 ## Architecture
 
 The AgriSarthi platform is built on a modern, scalable, and modular architecture that ensures high performance and maintainability.
+<br>
 **LINK(Interactive Diagram) :** [LINK](https://app.eraser.io/workspace/bDVQE1A6Wi5T7KTrQhaa)
 <img width="12454" height="5901" alt="diagram-export-8-13-2025-5_51_24-PM" src="https://github.com/user-attachments/assets/9ea45bb3-901d-42dd-bcc2-a93168422340" />
 
@@ -116,14 +117,15 @@ Follow these instructions to set up and run the AgriSarthi project locally.
 1.  **Clone the repository**:
 
     ```bash
-    git clone <repository_url>
+    git clone [<repository_url>](https://github.com/HimanshuMohanty-Git24/Agri-Sarthi.git)
     cd agri_sarthi_project/backend
     ```
 
 2.  **Create a virtual environment and activate it**:
 
     ```bash
-    python -m venv venv
+    uv init
+    uv venv
     source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
     ```
 
@@ -205,6 +207,7 @@ You can now call your Twilio phone number to interact with the voice agent.
   * **Database**: FAISS (for RAG)
 
   * **Deployment**: ngrok (for local development)
+
 
 
 
