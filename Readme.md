@@ -15,139 +15,10 @@ This project aims to bridge the information gap in the agricultural sector, prov
 ## Architecture
 
 The AgriSarthi platform is built on a modern, scalable, and modular architecture that ensures high performance and maintainability.
+<img width="12454" height="5901" alt="diagram-export-8-13-2025-5_51_24-PM" src="https://github.com/user-attachments/assets/9ea45bb3-901d-42dd-bcc2-a93168422340" />
 
-```mermaid
-graph TB
-    %% User Interface Layer
-    subgraph UL["🌐 User Interface Layer"]
-        direction TB
-        WA["🖥️ Web Application<br/>━━━━━━━━━━━━━<br/>• React.js Frontend<br/>• Responsive UI/UX<br/>• Real-time Chat Interface<br/>• 24/7 Accessibility"]
-        PC["📞 Voice System<br/>━━━━━━━━━━━━━<br/>• Twilio Voice API<br/>• Speech Recognition<br/>• Text-to-Speech<br/>• Phone Call Integration"]
-        WP["💬 WhatsApp Bot<br/>━━━━━━━━━━━━━<br/>• Agri-Sarthi-WP<br/>• Separate Codebase<br/>• Messaging Interface<br/>• Wide Rural Reach"]
-    end
 
-    %% API Gateway Layer
-    subgraph GL["🚪 API Gateway Layer - FastAPI"]
-        direction TB
-        AG["⚡ API Gateway<br/>━━━━━━━━━━━━━<br/>• Request Routing<br/>• Load Balancing<br/>• Rate Limiting<br/>• Authentication"]
-        
-        subgraph ENDPOINTS["📡 Service Endpoints"]
-            CE["💬 Chat Endpoint<br/>• REST API<br/>• JSON Response<br/>• Error Handling"]
-            VE["🎤 Voice Endpoint<br/>• WebSocket Stream<br/>• Real-time Audio<br/>• Bidirectional"]
-            UM["👥 User Management<br/>• Session Handling<br/>• User Profiles<br/>• Analytics"]
-        end
-    end
 
-    %% AI Processing Layer
-    subgraph AL["🧠 AI Processing Core - LangChain & LangGraph"]
-        direction TB
-        SA["🎯 Supervisor Agent<br/>━━━━━━━━━━━━━━━━━<br/>• Query Classification<br/>• Agent Orchestration<br/>• Response Coordination<br/>• Context Management"]
-        
-        subgraph AGENTS["🤖 Specialist AI Agents"]
-            SCA["🌱 Soil & Crop Advisor<br/>━━━━━━━━━━━━━━━━━<br/>• Soil Health Analysis<br/>• Crop Recommendations<br/>• Weather Alerts<br/>• Farming Techniques<br/>• RAG Implementation"]
-            
-            MA["📈 Market Analyst<br/>━━━━━━━━━━━━━━━━━<br/>• Real-time Market Prices<br/>• Mandi Rate Tracking<br/>• Price Trend Analysis<br/>• Demand Forecasting<br/>• Supply Chain Insights"]
-            
-            FA["🏦 Financial Advisor<br/>━━━━━━━━━━━━━━━━━<br/>• Government Schemes<br/>• Subsidy Information<br/>• Loan Guidance<br/>• Financial Planning<br/>• Insurance Advice"]
-        end
-    end
-
-    %% Data & Services Layer
-    subgraph DL["💾 Data & External Services Layer"]
-        direction TB
-        
-        subgraph STORAGE["🗄️ Data Storage"]
-            VS["📊 FAISS Vector Store<br/>━━━━━━━━━━━━━━━━━<br/>• Soil Dataset (CSV)<br/>• Embedding Storage<br/>• Similarity Search<br/>• Fast Retrieval"]
-        end
-        
-        subgraph APIS["🔗 External APIs"]
-            EA["☁️ Market Data APIs<br/>━━━━━━━━━━━━━━━━━<br/>• Live Price Feeds<br/>• Government Portals<br/>• Weather Services<br/>• Agricultural Databases"]
-            
-            TA["📞 Twilio API<br/>━━━━━━━━━━━━━━━━━<br/>• Voice Processing<br/>• Call Management<br/>• Media Streaming<br/>• Webhook Integration"]
-        end
-        
-        subgraph MODELS["🚀 AI Models & Processing"]
-            LLM["🤖 Groq LLaMA3 LLM<br/>━━━━━━━━━━━━━━━━━<br/>• Fast Inference<br/>• Multi-language Support<br/>• Context Understanding<br/>• Response Generation"]
-            
-            STT["🎤 Speech Processing<br/>━━━━━━━━━━━━━━━━━<br/>• Real-time Transcription<br/>• Voice Synthesis<br/>• Audio Streaming<br/>• Language Detection"]
-        end
-    end
-
-    %% Infrastructure Layer
-    subgraph IL["🏗️ Infrastructure & DevOps"]
-        direction LR
-        NG["🔗 Ngrok Tunnel<br/>• Local Development<br/>• Webhook Exposure<br/>• HTTPS Tunneling"]
-        
-        MON["📊 Monitoring<br/>• System Health<br/>• Performance Metrics<br/>• Error Tracking"]
-        
-        SEC["🔒 Security<br/>• API Authentication<br/>• Data Encryption<br/>• Rate Limiting"]
-    end
-
-    %% Connections - User Interface to Gateway
-    WA -.->|"HTTPS Requests"| AG
-    PC -.->|"Voice Calls"| TA
-    WP -.->|"WhatsApp Messages"| AG
-
-    %% Connections - Gateway to Endpoints
-    AG --> CE
-    AG --> VE
-    AG --> UM
-    TA -.->|"Webhook"| VE
-
-    %% Connections - Endpoints to AI Core
-    CE -->|"Text Query"| SA
-    VE -->|"Transcribed Audio"| SA
-
-    %% Connections - Supervisor to Agents
-    SA -->|"Route Query"| SCA
-    SA -->|"Route Query"| MA
-    SA -->|"Route Query"| FA
-
-    %% Connections - Agents to Data Services
-    SCA --> VS
-    SCA --> EA
-    SCA --> LLM
-    MA --> EA
-    MA --> LLM
-    FA --> EA
-    FA --> LLM
-
-    %% Voice Processing Connections
-    VE --> STT
-    STT --> LLM
-    LLM -.->|"Audio Response"| VE
-
-    %% Infrastructure Connections
-    VE -.-> NG
-    AG -.-> MON
-    AG -.-> SEC
-
-    %% Dark Mode Optimized Styling
-    classDef uiLayer fill:#1a365d,stroke:#63b3ed,stroke-width:3px,color:#ffffff
-    classDef gatewayLayer fill:#44337a,stroke:#b794f6,stroke-width:3px,color:#ffffff
-    classDef aiLayer fill:#1c4532,stroke:#68d391,stroke-width:3px,color:#ffffff
-    classDef dataLayer fill:#744210,stroke:#f6ad55,stroke-width:3px,color:#ffffff
-    classDef infraLayer fill:#742a2a,stroke:#fc8181,stroke-width:3px,color:#ffffff
-    
-    classDef agentBox fill:#2d5a3d,stroke:#48bb78,stroke-width:2px,color:#ffffff
-    classDef endpointBox fill:#553c9a,stroke:#9f7aea,stroke-width:2px,color:#ffffff
-    classDef serviceBox fill:#9c4221,stroke:#ed8936,stroke-width:2px,color:#ffffff
-
-    %% Apply styles
-    class UL uiLayer
-    class GL gatewayLayer
-    class AL aiLayer
-    class DL dataLayer
-    class IL infraLayer
-    
-    class SCA,MA,FA agentBox
-    class CE,VE,UM endpointBox
-    class VS,EA,TA,LLM,STT serviceBox
-
-    %% Global Dark Mode Theme Configuration
-    %%{init: {"theme": "dark", "themeVariables": {"primaryColor": "#1f2937", "primaryTextColor": "#ffffff", "primaryBorderColor": "#4b5563", "lineColor": "#9ca3af", "secondaryColor": "#374151", "tertiaryColor": "#4b5563", "background": "#111827", "mainBkg": "#1f2937", "secondBkg": "#374151", "tertiaryBkg": "#4b5563"}}}%%
-
-```
 
 -----
 
@@ -329,6 +200,7 @@ You can now call your Twilio phone number to interact with the voice agent.
   * **Database**: FAISS (for RAG)
 
   * **Deployment**: ngrok (for local development)
+
 
 
 
