@@ -107,7 +107,7 @@ Follow these instructions to set up and run the AgriSarthi project locally.
       * `GROQ_API_KEY`
       * `TAVILY_API_KEY`
       * `GOOGLE_API_KEY`
-      * `SARVAM_API_KEY` (if applicable)
+      * `SARVAM_API_KEY`
       * `TWILIO_ACCOUNT_SID`
       * `TWILIO_AUTH_TOKEN`
       * `TWILIO_PHONE_NUMBER`
