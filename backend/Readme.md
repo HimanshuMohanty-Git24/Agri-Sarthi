@@ -368,7 +368,7 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies with UV
-RUN uv pip install --system -r requirements.txt
+RUN uv add --system -r requirements.txt
 
 EXPOSE 8000
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
@@ -378,7 +378,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 ```bash
 # Production setup
-uv pip install gunicorn
+uv add gunicorn
 gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
 ```
 
