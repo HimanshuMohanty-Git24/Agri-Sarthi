@@ -117,20 +117,33 @@ Follow these instructions to set up and run the AgriSarthi project locally.
 1.  **Clone the repository**:
 
     ```bash
-    git clone [<repository_url>](https://github.com/HimanshuMohanty-Git24/Agri-Sarthi.git)
+    git clone https://github.com/HimanshuMohanty-Git24/Agri-Sarthi.git
     cd agri_sarthi_project/backend
     ```
 
 2.  **Create a virtual environment and activate it**:
 
+    **Using uv (recommended)**:
     ```bash
     uv init
     uv venv
     source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
     ```
 
+    **Alternative - Using standard Python**:
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+    ```
+
 3.  **Install dependencies**:
 
+    **Using uv**:
+    ```bash
+    uv add -r requirements.txt
+    ```
+
+    **Alternative - Using pip**:
     ```bash
     pip install -r requirements.txt
     ```
@@ -196,6 +209,14 @@ Follow these instructions to set up and run the AgriSarthi project locally.
 
 You can now call your Twilio phone number to interact with the voice agent.
 
+### WhatsApp Setup
+
+For WhatsApp integration setup, please refer to the dedicated repository:
+
+**[Agri-Sarthi-WP - WhatsApp Integration Setup Guide](https://github.com/HimanshuMohanty-Git24/Agri-Sarthi-WP)**
+
+The WhatsApp gateway is maintained in a separate codebase to keep the backend modular and avoid complexity in the main application.
+
 -----
 
 ## Technologies Used
@@ -205,12 +226,4 @@ You can now call your Twilio phone number to interact with the voice agent.
   * **AI**: LangChain, LangGraph, Groq LLaMA3
   * **Voice**: Twilio
   * **Database**: FAISS (for RAG)
-
   * **Deployment**: ngrok (for local development)
-
-
-
-
-
-
-
