@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.venv/
+
+# Environment
+.env
+
+# Logs
+logs/
+
+# Node.js (frontend)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build
+/build
+/coverage
+
+# IDE
+.DS_Store
+.vscode/
+.idea/
+
+# Misc
+*.txt
+!requirements.txt
+faiss_vector_store/
