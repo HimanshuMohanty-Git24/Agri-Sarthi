@@ -1,0 +1,15 @@
+# WhatsApp Bot requirements
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+pydantic>=2.0.0
+
+# Language detection & translation
+langdetect>=1.0.9
+
+# Groq (Whisper audio transcription — optional)
+groq>=0.18.0
+langchain-groq>=0.2.0
+
+# Sarvam AI (via requests — included above)
